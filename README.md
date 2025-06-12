@@ -1,2 +1,1 @@
-# HuggingFace_ONNX2RDF
-ONNX to RDF parser for hugginface repositories
+# Hugging Face ONNX to RDF parser
