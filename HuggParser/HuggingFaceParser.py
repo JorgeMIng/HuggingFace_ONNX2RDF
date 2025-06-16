@@ -66,6 +66,18 @@ else:
 connection_error ="Connection to Hugginface is down. Stoping program. Try in other moment"
 
 
+def is_notebook() -> bool:
+    try:
+        shell = get_ipython().__class__.__name__
+        if shell == 'ZMQInteractiveShell':
+            return True   # Jupyter notebook or qtconsole
+        elif shell == 'TerminalInteractiveShell':
+            return False  # Terminal running IPython
+        else:
+            return False  # Other type (?)
+    except NameError:
+        return False      # Probably standard Python interpreter
+
 
 def patch_hf_progress(shared_bar):
     original = file_download._get_progress_bar_context
@@ -281,6 +293,7 @@ class HuggingFaceParser():
 
         
         self._threads=[]
+        self._dirty=True
         
         self._rdf_parsers = [ONNX2RDFParser()]
 
@@ -639,8 +652,9 @@ class HuggingFaceParser():
                 if self._repo_lists:
                     path_save = os.path.join(self._work_folder,self._cache_file_name)
                     __dump_json__(path_save,self._repo_lists)
-                if hasattr(self, "_metrics_data"):
+                if hasattr(self, "_metrics_data") and self._dirty:
                     self.__save_metrics__(self._metrics_data)
+                    self._dirty=True
             
         
         return True
@@ -653,6 +667,7 @@ class HuggingFaceParser():
         for thread_id in range(self._num_threads):
             
             thread = threading.Thread(target=self.__worker__,kwargs={"thread_id":thread_id,"try_again":try_again},name=f"HuggParser_{thread_id}")
+            thread.daemon = True
             thread.start()
             self._threads.append(thread)
 
@@ -773,8 +788,12 @@ class HuggingFaceParser():
         original_download_func=False
         if len(redownload_paths)>0:
             
-            outer_progress = tq.tqdm_notebook(total=len(redownload_paths),desc=desc)
-            file_progress_bar = tq.tqdm_notebook(total = 0,desc="Error",unit="B",unit_scale=True,initial=0)
+            if is_notebook():
+                outer_progress = tq.tqdm_notebook(total=len(redownload_paths),desc=desc)
+                file_progress_bar = tq.tqdm_notebook(total = 0,desc="Error",unit="B",unit_scale=True,initial=0)
+            else:
+                outer_progress = tq.tqdm(total=len(redownload_paths),desc=desc)
+                file_progress_bar = tq.tqdm(total = 0,desc="Error",unit="B",unit_scale=True,initial=0)
 
             #TODO: temporal fix should do PR to hugginface_hub solving this issue
             original_download_func = __fix_paths_hub_download__()
@@ -955,13 +974,13 @@ class HuggingFaceParser():
         
     def __signal_handler_raise__(self,signum, frame):
         self.stop()
-        self._logger.error(f"Program {signal.strsignal(signum)}, closing resources")
+        self._logger.error(f"Program {signal.strsignal(signum)}, closing resources. Wait or signal to stop program again")
         raise RuntimeError("Signal Stop Program")      
 
     def __signal_handler__(self,signum, frame):
         self.stop()
         
-        self._logger.error(f"Program {signal.strsignal(signum)}, closing resources")
+        self._logger.error(f"Program {signal.strsignal(signum)}, closing resources. Wait or signal to stop program again")
         
                    
                 
@@ -1017,9 +1036,10 @@ class HuggingFaceParser():
             if not there_is_work:
                 return 0
             
-            
-            self._pbar = tq.tqdm_notebook(total=self._n_repos, desc="Nº Completed Repos")
-            
+            if is_notebook():
+                self._pbar = tq.tqdm_notebook(total=self._n_repos, desc="Nº Completed Repos")
+            else:
+                self._pbar = tq.tqdm(total=self._n_repos, desc="Nº Completed Repos")
             
             if try_again or try_error:
                 self.change_try_again_cache()
@@ -1032,7 +1052,7 @@ class HuggingFaceParser():
 
         finally:
             self._running=False
-            self.restore_multiple_singal(signals_to_catch)
+            
             if hasattr(self,"_pbar"):
                 self._pbar.close()
             
@@ -1047,13 +1067,24 @@ class HuggingFaceParser():
 
                     # Create tqdm progress bar
                     with self._lock:
-                        self._threads_stopped_bar = tq.tqdm_notebook(total=len(self._threads), desc="Stopping Threads")
+                        if is_notebook():
+                            self._threads_stopped_bar = tq.tqdm_notebook(total=len(self._threads), desc="Stopping Threads")
+                        else:
+                            self._threads_stopped_bar = tq.tqdm(total=len(self._threads), desc="Stopping Threads")
                         self._threads_stopped_bar.update(len(stopped_threads)) 
                     
-                    for thread in self._threads:
-                        thread.join()
+                    self.set_multiple_singal(signals_to_catch,self.__signal_handler_raise__)
+                    try:
+                        for thread in self._threads:
+                            thread.join()
+                    except Exception:
+                        self._logger.error("Stopping Threads Forcefully. Errors might occur")
+                    self.set_multiple_singal(signals_to_catch,self.__signal_handler__)
                     self._logger.error("All Threads properly stopped")
                     self._repo_lists
+                    
+            self.restore_multiple_singal(signals_to_catch)        
+                    
             if hasattr(self,"_repo_lists") and hasattr(self,"_repo_data_queue"):
                 self.__fill_stopped_list__()
                     
@@ -1157,7 +1188,7 @@ class HuggingFaceParser():
     def __fill_csv_report_(self,repo_data:ModelInfo,report_repo,date):
         with self._lock:
             df = self._metrics_data
-            
+            self._dirty=True
             new_row = {"repo_id":repo_data.id,
                     "number_of_files":report_repo["number_files"],
                     "hugginface_repo_size":report_repo["before_size"],
@@ -1179,7 +1210,9 @@ class HuggingFaceParser():
                 new_row["global_elapsed_time"] = new_row["global_elapsed_time"] + new_row["downloading_time"] + new_row["metadata_time"]
             HuggingFaceParser.__add_error_data__(df,new_row,report_repo)
             df = df[df['repo_id'] != repo_data.id].copy()
-            df.loc[len(df)] = new_row
+            df.loc[-1] = new_row
+            df.index = df.index + 1
+            df = df.sort_index()
             self._metrics_data=df
             self.__save_metrics__(df)
 

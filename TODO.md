@@ -9,6 +9,8 @@ Add functionalities to have progress bar better progress bar in relation with ma
 ### Multiprocess
 Make sure threads download and parse files as new processes to make sure more threads can be deploy
 
+### FAIR4ML
+Add compatibility with FAIR4ML schema with the metadata creation (modified mappings)
 
 ## Minor Upgrades
 

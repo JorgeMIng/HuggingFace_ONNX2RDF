@@ -1,0 +1,55 @@
+{
+    "@context": "https://w3id.org/codemeta/3.0",
+    "author": [
+        {
+            "affiliation": {
+                "name": "Universidad Politécnica de Madrid",
+                "@type": "Organization"
+            },
+            "email": "jorge.martin.izquierdo@upm.es",
+            "familyName": "Martín",
+            "givenName": "Jorge",
+            "@id": "https://orcid.org/0009-0005-7696-8995",
+            "@type": "Person"
+        }
+    ],
+    "codeRepository": "git+https://github.com/JorgeMIng/HuggingFace_ONNX2RDF",
+    "dateCreated": "2025-06-12",
+    "dateModified": "2025-06-12",
+    "datePublished": "2025-06-12",
+    "description": "The parser automatically collects onnx files and using ONNX2RDF creates RDF files for each repository of Hugginface",
+    "keywords": [
+        {
+            "name": "ONNX",
+            "@id": "https://onnx.ai",
+            "@type": "DefinedTerm"
+        },
+        {
+            "name": "RDF",
+            "@id": "https://www.w3.org/TR/rdf-schema/",
+            "@type": "DefinedTerm"
+        },
+        {
+            "name": "Hugginface",
+            "@id": "https://huggingface.co",
+            "@type": "DefinedTerm"
+        }
+    ],
+    "license": "https://spdx.org/licenses/Apache-2.0",
+    "name": "Hugginface ONNX2RDF Parser",
+    "operatingSystem": [
+        "Windows",
+        "Linux"
+    ],
+    "programmingLanguage": "Python 3",
+    "softwareRequirements": [
+        {
+            "name": "ONNX2RDF",
+            "version": "0.1.0"
+        }
+    ],
+    "version": "0.1.0",
+    "developmentStatus": "wip",
+    "issueTracker": "https://github.com/JorgeMIng/HuggingFace_ONNX2RDF/issues",
+    "@type": "SoftwareSourceCode"
+}
