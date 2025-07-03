@@ -51,7 +51,7 @@ from  requests.exceptions import ConnectionError as conn_err
 from HuggingFaceMetadataParser import created_metadata_json,edit_copy_mappings,delete_meta_files
 import platform
 if platform.system().lower() == "windows":
-    signals_to_catch = [signal.SIGINT, signal.SIGTERM, signal.SIGBREAK,signal.SIGABRT]
+    signals_to_catch = list(signal.valid_signals())
 else:
     signals_to_catch = [
             signal.SIGINT,     # Ctrl+C
@@ -318,7 +318,8 @@ class HuggingFaceParser():
         
         
         self._default_repo_lists = {"repo_id_done":[],"repo_id_error":[],"repo_id_warning":[],"repo_id_try_again":[],"repo_id_banned":[],"repos_stopped":[]}
-    
+        self._repo_lists = self._default_repo_lists 
+        
     def set_multiple_singal(self,signal_types:list[signal.Signals],handle):
         if threading.current_thread() == threading.main_thread():
             for signal_type in signal_types:
@@ -805,7 +806,7 @@ class HuggingFaceParser():
         for file in redownload_paths:
             # Download each model file using hf_hub_download
             self.__check_is_stoped__()
-            self.set_multiple_singal(signals_to_catch,self.__signal_handler_raise__)
+            self.set_multiple_singal(signals_to_catch,self.__signal_handler_)
             self.__check_is_stoped__()
            
             try:
@@ -834,7 +835,7 @@ class HuggingFaceParser():
                 downloaded_path=downloaded_path.replace("\\","/")
                 downloaded_files.append(downloaded_path)
                 file_download._get_progress_bar_context = original_get_progress
-            except Exception as e:
+            except (Exception,KeyboardInterrupt) as e:
                 
                 
                 file_download._get_progress_bar_context = original_get_progress
@@ -1216,8 +1217,11 @@ class HuggingFaceParser():
             HuggingFaceParser.__add_time_report__(new_row,report_repo,"yarrr2rml_elapsed_time","yarrr2rml_elapsed_time")
             HuggingFaceParser.__add_time_report__(new_row,report_repo,"rml_parsing_elapsed_time","rml_parsing_elapsed_time")
             HuggingFaceParser.__add_time_report__(new_row,report_repo,"global_elapsed_time","global_elapsed_time")
-            if "global_elapsed_time" in new_row and isinstance(new_row["download_time"],int):
-                new_row["global_elapsed_time"] = new_row["global_elapsed_time"] + new_row["download_time"] + new_row["metadata_time"]
+            
+            try:
+                new_row["global_elapsed_time"] = new_row["global_elapsed_time"] + new_row["downloading_time"] + new_row["metadata_time"]
+            except Exception:
+                pass
             HuggingFaceParser.__add_error_data__(df,new_row,report_repo)
             df = df[df['repo_id'] != repo_data.id].copy()
             df.loc[-1] = new_row
