@@ -90,6 +90,9 @@ def patch_hf_progress(shared_bar):
 
 def unpatch_hf_progress(original):
     file_download._get_progress_bar_context = original
+    
+def str_to_bool(s: str):
+    return {"true": True, "false": False}.get(s.strip().lower(), False)
 
 
 def __load_pickle__(path):
@@ -360,8 +363,9 @@ class HuggingFaceParser():
             parser.set_debug(_config.get("PARSER","debug"))
             parser.set_work_folder(_config.get("PARSER","work_folder"))
             parser.set_cache_options(_config.get("PARSER","cache"))
-            parser.set_to_console(_config.get("PARSER","to_console"))
+            parser.set_to_console(str_to_bool(_config.get("PARSER","to_console")))
             parser.set_parser_heap(_config.get("PARSER","max_ram"))
+            parser.set_stop_parsing(str_to_bool(_config.get("PARSER","no_parsing")))
         
         self._metrics_file = _config.get("METRICS","file_name")
         self._metadata_folder = _config.get("METADATA","tmp_metadata_folder")
@@ -684,7 +688,7 @@ class HuggingFaceParser():
                 self._logger.info(connection_error)
                 self._hard_stop=True
             raise
-        base_pattern = re.compile(r".*\.onnx_data$")  
+        base_pattern = re.compile(r".*\.(onnx_data|onnx\.data)$")  
         return [file for file in files if re.search(base_pattern, file)]
             
     def __get_onnx_paths__(self,repo_id, specified_optimization:int=4,logger:Logger=None):
@@ -1145,14 +1149,20 @@ class HuggingFaceParser():
         error_list : list[ErrorsONNX2RDF] = report_repo["result"]["error_types"]
         values=dict()
         
+        number_erros=0
+        
         for error in error_list:
             column_name = f"n_errors_{error.name}"
             if error !=ErrorsONNX2RDF.NONE_ERROR and column_name not in data.columns:
                 data[column_name] = 0
             if error !=ErrorsONNX2RDF.NONE_ERROR:
+                number_erros=number_erros+1
                 values[error.name]=values.get(error.name, 0) + 1
         for key in values.keys():
-            row[f"n_errors_{key}"]=values[key]  
+            row[f"n_errors_{key}"]=values[key]
+        n_files=len(error_list)
+        coverage = (n_files/(n_files-number_erros))*100
+        row["repo_coverage"]=coverage
     
     
     @staticmethod
@@ -1206,8 +1216,8 @@ class HuggingFaceParser():
             HuggingFaceParser.__add_time_report__(new_row,report_repo,"yarrr2rml_elapsed_time","yarrr2rml_elapsed_time")
             HuggingFaceParser.__add_time_report__(new_row,report_repo,"rml_parsing_elapsed_time","rml_parsing_elapsed_time")
             HuggingFaceParser.__add_time_report__(new_row,report_repo,"global_elapsed_time","global_elapsed_time")
-            if "global_elapsed_time" in new_row and isinstance(new_row["downloading_time"],int):
-                new_row["global_elapsed_time"] = new_row["global_elapsed_time"] + new_row["downloading_time"] + new_row["metadata_time"]
+            if "global_elapsed_time" in new_row and isinstance(new_row["download_time"],int):
+                new_row["global_elapsed_time"] = new_row["global_elapsed_time"] + new_row["download_time"] + new_row["metadata_time"]
             HuggingFaceParser.__add_error_data__(df,new_row,report_repo)
             df = df[df['repo_id'] != repo_data.id].copy()
             df.loc[-1] = new_row
@@ -1393,8 +1403,8 @@ class HuggingFaceParser():
             metadata_folder,metadata_mapping_path = self.__build_tmp_metadata__(repo_data,id_process,result["model_uris"])
             rdf_path = os.path.join(parser.work_folder,parser.get_target_path(),self.build_model_name(repo_id))
             if metadata_folder and metadata_mapping_path:
-                parser.yarrml2_rdf_pipeline(metadata_mapping_path,file_name="metadata",output_folder=rdf_path)
-            
+                result_path = parser.yarrml2_rdf_pipeline(metadata_mapping_path,file_name="metadata",output_folder=rdf_path)
+                self.__fix_incorrect_separator__(result_path)
         except Exception as e:
             self.__remove_files__(repo_id)
             self._logger.error(f"Error Preparing Hugginface Metadata of Repo ({repo_data.id}) with URL ({url}) : got unexcpeted error\n {traceback.format_exc()}")
@@ -1413,6 +1423,13 @@ class HuggingFaceParser():
             
         return self.__build_report__(False,number_files=number_files,before_size=before_size,after_size=after_size,other_times=times_extra,result=result)
         
+    def __fix_incorrect_separator__(self,rdf_path):
+        with open(rdf_path, 'r', encoding='utf-8') as f:
+            content = f.read()
+        new_content = content.replace('%2F', '/')
+
+        with open(rdf_path, 'w', encoding='utf-8') as f:
+            f.write(new_content)
         
         
         

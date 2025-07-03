@@ -114,6 +114,11 @@ def edit_copy_mappings(mapping_path:str,meta_folder:str,metadata_path,id_process
     yaml_f["prefixes"]["hugg_base"]=config_file.get("URIS","hugginface_base")   
     yaml_f["prefixes"]["resource_base"]=config_file.get("URIS","resource_url")
     
+    pos = yaml_f["mappings"]["test"]["po"]
+    for po in pos:   
+        if isinstance(po,dict) and "predicates" in po and po["predicates"]=="hugg_base:has_model":
+            po["objects"] = f"{config_file.get("URIS","resource_url")}$(models_uris[*])/Model~iri"
+        
     os.makedirs(os.path.dirname(output_yaml_path), exist_ok=True)
 
     with open(output_yaml_path, 'w',) as f :

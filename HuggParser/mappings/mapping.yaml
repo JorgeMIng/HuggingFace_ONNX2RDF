@@ -38,7 +38,7 @@ mappings:
     subjects: resource_base:huggingface/$(modelId)
     po:
     - [a, hugg_base:HuggModel]
-    - [hugg_base:hugg_url, $(repo_url), xsd:string]
+    - [hugg_base:hugg_url, $(repo_url), xsd:anyURI]
     - [hugg_base:model_id, $(modelId), xsd:string]
     - [hugg_base:has_tag, "$(tags[*])", xsd:string]
     - [hugg_base:author, "$(author)", xsd:string]
@@ -47,8 +47,8 @@ mappings:
     - [hugg:base:downloads, $(downloads),xsd:integer]
     - [hugg:base:library_name, $(library_name),xsd:string]
     - [hugg:base:pipeline_tag, $(pipeline_tag),xsd:string]
-    - [hugg:base:private, $(private),xsd:string]
-    - [hugg:base:gated, $(gated),xsd:string]
+    - [hugg:base:private, $(private),xsd:boolean]
+    - [hugg:base:gated, $(gated),xsd:boolean]
     - [hugg:base:disabled, $(disabled),xsd:string]
     - [hugg:base:inference, $(inference),xsd:string]
     - [hugg:base:has_spaces, "$(spaces[*])",xsd:string]
@@ -56,7 +56,7 @@ mappings:
     - [hugg:base:model_card_text, "$(model_card_content)",xsd:string]
 
     - predicates: hugg_base:has_model
-      objects: resource_base:$(models_uris[*]):Model~iri
+      objects: templete(being filled with code)
     
     - predicates: hugg_base:file_with_security_issue
       objects: resource_base:security_issues/$(security_repo_status.filesWithIssues[*].path)~iri
