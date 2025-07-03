@@ -806,7 +806,7 @@ class HuggingFaceParser():
         for file in redownload_paths:
             # Download each model file using hf_hub_download
             self.__check_is_stoped__()
-            self.set_multiple_singal(signals_to_catch,self.__signal_handler_)
+            
             self.__check_is_stoped__()
            
             try:
@@ -831,7 +831,7 @@ class HuggingFaceParser():
                 if logger:    
                     logger.info(f"Downloaded {file} to {downloaded_path}")
                 
-                self.set_multiple_singal(signals_to_catch,self.__signal_handler__)
+                
                 downloaded_path=downloaded_path.replace("\\","/")
                 downloaded_files.append(downloaded_path)
                 file_download._get_progress_bar_context = original_get_progress
@@ -1352,7 +1352,7 @@ class HuggingFaceParser():
                                                         work_folder_parser=self._rdf_parsers[id_process].get_work_folder())
             before_size = total_size + total_size_data
             
-        except Exception as e:
+        except (Exception,KeyboardInterrupt) as e:
             
             self.__remove_files__(repo_id)
             if not self._hard_stop:
