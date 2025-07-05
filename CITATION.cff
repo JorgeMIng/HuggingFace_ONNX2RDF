@@ -5,9 +5,10 @@ authors:
   orcid: https://orcid.org/0009-0005-7696-8995
 cff-version: 1.2.0
 date-released: '2025-07-05'
+doi: 10.5281/zenodo.15814658
 license: Apache-2.0
 message: If you use this software, please cite it using the metadata from this file.
-repository-code: https://github.com/JorgeMIng/HuggingFace_ONNX2RDF/tree/v0.1.0
-title: ONNX to RDF Parser | ONNX2RDF v0.1.4
+repository-code: https://github.com/JorgeMIng/HuggingFace_ONNX2RDF/tree/v0.1.1
+title: HuggingFace2RDF v0.1.1
 type: software
-version: v0.1.4
+version: v0.1.1

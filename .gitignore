@@ -187,7 +187,7 @@ cython_debug/
 **tmp_metadata/
 **models/
 
-#Hugginface Parser Files
+#HuggingFface Parser Files
 **/full_list.pkl
 **/metrics.csv
 **/progress.cache.json

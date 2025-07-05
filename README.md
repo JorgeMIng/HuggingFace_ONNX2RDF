@@ -2,18 +2,20 @@
 
 
 [![License](https://img.shields.io/github/license/JorgeMIng/HuggingFace_ONNX2RDF)](LICENSE)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.15814658.svg)](https://doi.org/10.5281/zenodo.15814658)
 [![Cite this software](https://img.shields.io/badge/Cite%20this-CFF-blue)](https://github.com/JorgeMIng/HuggingFace_ONNX2RDF/blob/main/CITATION.cff)
 
 
 
-A Python tool uses [ONNX2RDF](https://github.com/JorgeMIng/ONNX2RDF) for converting Hugginface Repositories with ONNX (Open Neural Network Exchange) files to RDF (Resource Description Framework).
+
+A Python tool uses [ONNX2RDF](https://github.com/JorgeMIng/ONNX2RDF) for converting HuggingFace Repositories with ONNX (Open Neural Network Exchange) files to RDF (Resource Description Framework).
 
 ---
 
 ## ✨ Features
 
 - ✅ Parses ONNX model structure into RDF triples (nquads, turtle, trig, trix, jsonld, hdt)
-- ✅ Automatic downloading of Hugginface Files
+- ✅ Automatic downloading of HuggingFace Files
 - ✅ Keeps progress making it able to be stopped to later continue
 - ✅ Download repositories randomfly, by most downloads or least downloads
 - ✅ Use of threads and multiproccesing for paralization
@@ -165,7 +167,7 @@ This will:
 
 Besides the command-line interface, ONNX2RDF also works as a Python library for programmatic integration.
 
-### Main HugginfaceParser Class
+### Main HuggingFaceParser Class
 
 The core class is `HuggingFaceParser`.
 
@@ -235,10 +237,11 @@ If you use this software, please cite as:
 ```bibtex
 @software{martin_izquierdo_2025_onnx2rdf,
   author       = {Jorge Martín Izquierdo},
-  title        = {ONNX to RDF Parser},
-  version      = {0.1.0},
+  title        = {HuggingFace2RDF},
+  version      = {0.1.1},
   date         = {2025-07-05},
-  url          = {https://github.com/JorgeMIng/ONNX2RDF},
+  url          = {https://github.com/JorgeMIng/HuggingFace_ONNX2RDF},
+  doi          = {10.5281/zenodo.15814658},
   license      = {Apache 2.0},
   affiliation  = {Universidad Politécnica de Madrid},
   keywords     = {ONNX, RDF, Semantic Web, Machine Learning},

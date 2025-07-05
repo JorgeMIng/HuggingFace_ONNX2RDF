@@ -14,11 +14,12 @@
             "givenName": "Jorge"
         }
     ],
-    "codeRepository": "https://github.com/JorgeMIng/ONNX2RDF",
+    "codeRepository": "https://github.com/JorgeMIng/HuggingFace_ONNX2RDF",
     "dateCreated": "2025-07-05",
     "dateModified": "2025-07-05",
     "datePublished": "2025-07-05",
-    "description": "The parser automatically collects onnx files and using ONNX2RDF creates RDF files for each repository of Hugginface",
+    "identifier": "https://doi.org/10.5281/zenodo.15814658",
+    "description": "The parser automatically collects onnx files and using ONNX2RDF creates RDF files for each repository of HuggingFace",
     "keywords": [
         "HuggingFace",
         "ONNX",
@@ -29,7 +30,7 @@
         "Machine Learning"
     ],
     "license": "https://spdx.org/licenses/Apache-2.0",
-    "name": "Hugginface2RDF",
+    "name": "HuggingFace2RDF",
     "operatingSystem": [
         "Windows",
         "Linux"
@@ -43,7 +44,7 @@
         "https://github.com/RMLio/yarrrml-parser",
         "https://github.com/JorgeMIng/ONNX2RDF"
     ],
-    "version": "0.1.0",
+    "version": "0.1.1",
     "developmentStatus": "active",
     "issueTracker": "https://github.com/JorgeMIng/ONNX2RDF/issues"
 }

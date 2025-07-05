@@ -68,7 +68,7 @@ else:
         ]
 
 
-connection_error ="Connection to Hugginface is down. Stoping program. Try in other moment"
+connection_error ="Connection to HuggingFace is down. Stoping program. Try in other moment"
 
 
 
@@ -974,7 +974,7 @@ class HuggingFaceParser():
             if (try_again):
                 self._logger.info("There are no more Repos on the try_again_list to fix. Good Job")
                 return False
-            self._logger.info("There are no more Repos on Hugginface to parse. Very Good Job")
+            self._logger.info("There are no more Repos on HuggingFace to parse. Very Good Job")
             return False
         
         
@@ -1086,7 +1086,7 @@ class HuggingFaceParser():
             self._running=False
         except (BaseException):
             if self._hard_stop!=True:
-                self._logger.error(f"Error Parsing Hugginface Repos: got unexcpeted error\n {traceback.format_exc()}")         
+                self._logger.error(f"Error Parsing HuggingFace Repos: got unexcpeted error\n {traceback.format_exc()}")         
 
         finally:
             self._running=False
@@ -1369,17 +1369,17 @@ class HuggingFaceParser():
             buffer = 1 * 1024 ** 3 #1GB
             if disk_space-buffer< total_size:
                 warnings.warn(f"Not Enough Memory to Download Repo ({repo_data.id}) with URL ({url})")
-                return self.__build_report__(True,"NO_ENOUGH_MEMORY","Hugginface_Error")
+                return self.__build_report__(True,"NO_ENOUGH_MEMORY","HuggingFace_Error")
             if len(paths)==0:
                 
                 warnings.warn(f"Not ONNX Files found at repo ({repo_data.id}) with URL ({url})")
-                return self.__build_report__(True,"No_ONNX_FILES","Hugginface_Error")
+                return self.__build_report__(True,"No_ONNX_FILES","HuggingFace_Error")
             self.__check_is_stoped__()  
         except Exception as e:
             self.__remove_files__(repo_id)
             if not self._hard_stop:
-                self._logger.error(f"Error Getting Files Paths of Hugginface Repo at repo ({repo_data.id}) with URL ({url}) : got unexcpeted error\n {traceback.format_exc()}")
-            return self.__build_report__(True,type(e).__name__,"Hugginface_Error")
+                self._logger.error(f"Error Getting Files Paths of HuggingFace Repo at repo ({repo_data.id}) with URL ({url}) : got unexcpeted error\n {traceback.format_exc()}")
+            return self.__build_report__(True,type(e).__name__,"HuggingFace_Error")
         
         
             
@@ -1399,7 +1399,7 @@ class HuggingFaceParser():
             
             self.__remove_files__(repo_id)
             if not self._hard_stop:
-                self._logger.error(f"Error Downloading Hugginface Repo ({repo_data.id}) with URL ({url}) : got unexcpeted error\n {traceback.format_exc()}")
+                self._logger.error(f"Error Downloading HuggingFace Repo ({repo_data.id}) with URL ({url}) : got unexcpeted error\n {traceback.format_exc()}")
             return self.__build_report__(True,type(e).__name__,"Downloading_Model",number_files)
         
         
@@ -1441,9 +1441,9 @@ class HuggingFaceParser():
             
             if not result:
                 result=None
-            self._logger.error(f"Error Parsing Hugginface Repo ({repo_data.id}) with URL ({url}) : got unexcpeted error\n {traceback.format_exc()}")
+            self._logger.error(f"Error Parsing HuggingFace Repo ({repo_data.id}) with URL ({url}) : got unexcpeted error\n {traceback.format_exc()}")
             if not self._hard_stop:
-                self._logger.error(f"Error Parsing Hugginface Repo ({repo_data.id}) with URL ({url}) : got unexcpeted error\n {traceback.format_exc()}")
+                self._logger.error(f"Error Parsing HuggingFace Repo ({repo_data.id}) with URL ({url}) : got unexcpeted error\n {traceback.format_exc()}")
             return self.__build_report__(True,type(e).__name__,"Parsing_Error",number_files=number_files,before_size=before_size,after_size=after_size,other_times=times_extra,result=result)
             
             
@@ -1456,7 +1456,7 @@ class HuggingFaceParser():
                 self.__fix_incorrect_separator__(result_path)
         except Exception as e:
             self.__remove_files__(repo_id)
-            self._logger.error(f"Error Preparing Hugginface Metadata of Repo ({repo_data.id}) with URL ({url}) : got unexcpeted error\n {traceback.format_exc()}")
+            self._logger.error(f"Error Preparing HuggingFace Metadata of Repo ({repo_data.id}) with URL ({url}) : got unexcpeted error\n {traceback.format_exc()}")
             if metadata_folder:
                 delete_meta_files(metadata_folder)
             return self.__build_report__(True,type(e).__name__,"Metadata_Error",number_files=number_files,before_size=before_size)
@@ -1507,7 +1507,7 @@ class HuggingFaceParser():
         
 def __parse_args__():
     # Configuración del parser de argumentos
-    parser = argparse.ArgumentParser(description="Parses to rdf Hugginface Models using ONNX2RDF. \nThe models are taken randomly form the list of not done yet models (Hugginface list minus already done repos) and the list of models stopped on the last execution\n"+
+    parser = argparse.ArgumentParser(description="Parses to rdf HuggingFace Models using ONNX2RDF. \nThe models are taken randomly form the list of not done yet models (HuggingFace list minus already done repos) and the list of models stopped on the last execution\n"+
                                      "The lists with the already done models, models with errors, models with warnings, models stopped are stored on a json file as cache that can be edited")
     
     parser.add_argument("num_repos", type=int, help="Number of repo of huggingface to parse (integer) -1 for ALL. They will be taken as randomly from the not_done_list + re_try_list")
