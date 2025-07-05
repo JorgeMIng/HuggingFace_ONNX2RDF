@@ -72,7 +72,7 @@ This Docker image includes:
 - Node.js + npm
 - `@rmlio/yarrrml-parser`
 - ONNX2RDF + CLI (onnx-parser)
-- HuggingFace_ONNX2RDF + CLI (hugg-parser)
+- HuggingFace2RDF + CLI (hugg-parser)
 
 ---
 
