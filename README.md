@@ -4,6 +4,8 @@
 [![License](https://img.shields.io/github/license/JorgeMIng/HuggingFace_ONNX2RDF)](LICENSE)
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.15814658.svg)](https://doi.org/10.5281/zenodo.15814658)
 [![Cite this software](https://img.shields.io/badge/Cite%20this-CFF-blue)](https://github.com/JorgeMIng/HuggingFace_ONNX2RDF/blob/main/CITATION.cff)
+![Python](https://img.shields.io/pypi/pyversions/HuggingFace2RDF)
+[![PyPI version](https://badge.fury.io/py/HuggingFace2RDF.svg)](https://badge.fury.io/py/HuggingFace2RDF)
 
 
 
@@ -42,7 +44,13 @@ You can also use the dockerfile (see below) which will prepare the enviroment.
 ## 📦 Installation Options
 
 
-### Option 1: Build from Source
+### Option 1: Install from pip
+
+```bash
+pip install HuggingFace2RDF
+```
+
+### Option 2: Build from Source
 
 Clone and install with [PEP 621](https://peps.python.org/pep-0621/)-compliant `pyproject.toml`:
 
@@ -56,7 +64,7 @@ This installs the CLI command `onnx-parser`.
 
 ---
 
-### Option 2: Using Docker
+### Option 3: Using Docker
 
 ```bash
 git clone https://github.com/JorgeMIng/HuggingFace_ONNX2RDF.git
