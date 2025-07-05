@@ -1,5 +1,5 @@
 
-FROM onnx2rdf-image
+FROM python:3.13.2-slim
 
 # Install Java (OpenJDK 17)
 RUN apt-get update && \
@@ -13,12 +13,18 @@ ENV PATH="$JAVA_HOME/bin:$PATH"
 
 RUN echo "✅ Java installed"
 
+RUN apt-get update
+RUN apt-get upgrade -y 
+RUN apt-get install -y npm
+RUN apt-get clean
+RUN rm -rf /var/lib/apt/lists/*
+
+
+RUN npm install -g @rmlio/yarrrml-parser
+
+RUN echo "✅ YARRML-parser installed"
+
 RUN pip install --upgrade pip
-
-# git clone https://github.com/JorgeMIng/ONNX2RDF.git
-# COPY . ONNX2RDF
-
-
 
 COPY . /HuggParserLib
 

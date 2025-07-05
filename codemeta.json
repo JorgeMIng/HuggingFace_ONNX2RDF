@@ -1,55 +1,49 @@
 {
     "@context": "https://w3id.org/codemeta/3.0",
+    "type": "SoftwareSourceCode",
     "author": [
         {
+            "id": "https://orcid.org/0009-0005-7696-8995",
+            "type": "Person",
             "affiliation": {
-                "name": "Universidad Politécnica de Madrid",
-                "@type": "Organization"
+                "type": "Organization",
+                "name": "Universidad Politécnica de Madrid"
             },
             "email": "jorge.martin.izquierdo@upm.es",
-            "familyName": "Martín",
-            "givenName": "Jorge",
-            "@id": "https://orcid.org/0009-0005-7696-8995",
-            "@type": "Person"
+            "familyName": "Martin Izquierdo",
+            "givenName": "Jorge"
         }
     ],
-    "codeRepository": "git+https://github.com/JorgeMIng/HuggingFace_ONNX2RDF",
-    "dateCreated": "2025-06-24",
-    "dateModified": "2025-06-24",
-    "datePublished": "2025-06-24",
+    "codeRepository": "https://github.com/JorgeMIng/ONNX2RDF",
+    "dateCreated": "2025-07-05",
+    "dateModified": "2025-07-05",
+    "datePublished": "2025-07-05",
     "description": "The parser automatically collects onnx files and using ONNX2RDF creates RDF files for each repository of Hugginface",
     "keywords": [
-        {
-            "name": "ONNX",
-            "@id": "https://onnx.ai",
-            "@type": "DefinedTerm"
-        },
-        {
-            "name": "RDF",
-            "@id": "https://www.w3.org/TR/rdf-schema/",
-            "@type": "DefinedTerm"
-        },
-        {
-            "name": "Hugginface",
-            "@id": "https://huggingface.co",
-            "@type": "DefinedTerm"
-        }
+        "HuggingFace",
+        "ONNX",
+        "RDF",
+        "Semantic Web",
+        "Ontology",
+        "Linked Data",
+        "Machine Learning"
     ],
     "license": "https://spdx.org/licenses/Apache-2.0",
-    "name": "Hugginface ONNX2RDF Parser",
+    "name": "Hugginface2RDF",
     "operatingSystem": [
         "Windows",
         "Linux"
     ],
-    "programmingLanguage": "Python 3",
-    "softwareRequirements": [
-        {
-            "name": "ONNX2RDF",
-            "version": "0.1.3"
-        }
+    "programmingLanguage": [
+        "Python",
+        "Java"
     ],
-    "version": "0.1.3",
-    "developmentStatus": "wip",
-    "issueTracker": "https://github.com/JorgeMIng/HuggingFace_ONNX2RDF/issues",
-    "@type": "SoftwareSourceCode"
+    "softwareRequirements": [
+        "https://github.com/RMLio/yarrrml-parser",
+        "https://github.com/RMLio/yarrrml-parser",
+        "https://github.com/JorgeMIng/ONNX2RDF"
+    ],
+    "version": "0.1.0",
+    "developmentStatus": "active",
+    "issueTracker": "https://github.com/JorgeMIng/ONNX2RDF/issues"
 }

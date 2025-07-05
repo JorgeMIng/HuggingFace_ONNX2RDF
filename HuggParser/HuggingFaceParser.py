@@ -50,6 +50,11 @@ import signal
 from  requests.exceptions import ConnectionError as conn_err
 from HuggingFaceMetadataParser import created_metadata_json,edit_copy_mappings,delete_meta_files
 import platform
+
+import concurrent.futures
+
+
+
 if platform.system().lower() == "windows":
     signals_to_catch = list(signal.valid_signals())
 else:
@@ -64,6 +69,23 @@ else:
 
 
 connection_error ="Connection to Hugginface is down. Stoping program. Try in other moment"
+
+
+
+def long_task(x):
+    time.sleep(10)  # Simulate long computation
+    return x * x
+
+
+
+
+
+    
+
+
+
+
+    
 
 
 def is_notebook() -> bool:
@@ -320,14 +342,14 @@ class HuggingFaceParser():
         self._default_repo_lists = {"repo_id_done":[],"repo_id_error":[],"repo_id_warning":[],"repo_id_try_again":[],"repo_id_banned":[],"repos_stopped":[]}
         self._repo_lists = self._default_repo_lists 
         
-    def set_multiple_singal(self,signal_types:list[signal.Signals],handle):
+    def __set_multiple_singal__(self,signal_types:list[signal.Signals],handle):
         if threading.current_thread() == threading.main_thread():
             for signal_type in signal_types:
-                if HuggingFaceParser.is_signal_editable(signal_type):
+                if HuggingFaceParser.__is_signal_editable__(signal_type):
                     signal.signal(signal_type,handle)
                     
     @staticmethod       
-    def is_signal_editable(signal_type):
+    def __is_signal_editable__(signal_type):
         value = None
         if isinstance(signal_type,signal.Signals):
             value = signal_type.value
@@ -336,17 +358,31 @@ class HuggingFaceParser():
         return value and value!=9 and value!=19                
                     
                     
-    def store_original_handlers(self,signal_types:list[signal.Signals]):
+    def __store_original_handlers__(self,signal_types:list[signal.Signals]):
         for signal_type in signal_types:
             self._original_handler[signal_type]=signal.getsignal(signal_type)
-    def restore_multiple_singal(self,signal_types:list[signal.Signals]):
+    def __restore_multiple_singal__(self,signal_types:list[signal.Signals]):
         if threading.current_thread() == threading.main_thread():
             for signal_type in signal_types:
-                if HuggingFaceParser.is_signal_editable(signal_type):
+                if HuggingFaceParser.__is_signal_editable__(signal_type):
                     signal.signal(signal_type,self._original_handler[signal_type])
-    
- 
-   
+    def __delegate_to_process__(self,func,kwargs):
+        
+        with concurrent.futures.ProcessPoolExecutor() as executor:
+            future = executor.submit(func, **kwargs)
+
+            try:
+                while not future.done():
+                    time.sleep(1)
+                    self.__check_is_stoped__()
+                result = future.result()
+                if result:
+                    return result
+            except Exception:
+                future.cancel()
+                raise
+        raise RuntimeError(f"Unexpected error when execution func {func}")
+                
 
     def __setup_config_values__(self):
         _config = configparser.ConfigParser()
@@ -377,7 +413,7 @@ class HuggingFaceParser():
         self._cache_file_name =  _config.get("CACHE","progress_file")
         self._full_list_name =  _config.get("CACHE","cache_hugg_list")
 
-        self.models_folder = _config.get("PARSER","models_folder")
+        self._models_folder = _config.get("PARSER","models_folder")
         self._log_folder = _config.get("LOGS","logs_folder")
         
         self._to_console = _config.get("LOGS","to_console")
@@ -605,10 +641,10 @@ class HuggingFaceParser():
                             self.__remove_cache__("repo_id_banned",repo_data.id)
                             
                 if not self._hard_stop:  
-                    self.__fill_csv_report_(repo_data,result,time_stamp)
+                    self.__fill_csv_report__(repo_data,result,time_stamp,try_again=try_again)
                 else:
                     repo_data["error_name"]="Program Stopped"
-                    self.__fill_csv_report_(repo_data,result,time_stamp)
+                    self.__fill_csv_report__(repo_data,result,time_stamp,try_again=try_again)
                 if result ["error_found"]:
                     
                     self._logger.info(f"Finishing Parsing Repo {repo_data.id} with errors (Warnings or Parsing Erros)")
@@ -666,7 +702,7 @@ class HuggingFaceParser():
   
           
     
-    def __paralalise_executions_(self,try_again=False):
+    def __paralalise_executions__(self,try_again=False):
         
         self._logger.info(f"Number of Threads: {self._num_threads}")
         for thread_id in range(self._num_threads):
@@ -757,7 +793,7 @@ class HuggingFaceParser():
     @staticmethod
     def __exists_cache__(file_path,repo_id,work_folder):
         file_cache_path = os.path.join(str(Path(file_path).with_suffix("")).replace(os.sep,"-.-"),"loaded_model.json")
-        repo_cache_name = HuggingFaceParser.build_model_name(repo_id)
+        repo_cache_name = HuggingFaceParser.__build_model_name__(repo_id)
         
         cache_path = os.path.join(work_folder,"tmp",repo_cache_name,file_cache_path).replace("\\","/")
         
@@ -824,8 +860,9 @@ class HuggingFaceParser():
                 local_dir = local_dir.replace("\\","/")
                 
                 #fix annoying issue with max path
+                args = {"repo_id":repo_id, "filename":file,"local_dir":local_dir,"cache_dir":local_dir,"force_download":True,"resume_download":True,"etag_timeout":130}
                 
-                downloaded_path = hf_hub_download(repo_id=repo_id, filename=file,local_dir=local_dir,cache_dir=local_dir,force_download=True)
+                self.__delegate_to_process__(hf_hub_download,kwargs=args)
 
                 outer_progress.update(1)
                 if logger:    
@@ -841,10 +878,6 @@ class HuggingFaceParser():
                 file_download._get_progress_bar_context = original_get_progress
                 if original_download_func:
                     __restore_original_method__(original_download_func)
-                    
-                if isinstance(e,conn_err):
-                    self._logger.info(connection_error)
-                    self._hard_stop=True
                 raise
         if original_download_func:
             __restore_original_method__(original_download_func)
@@ -962,7 +995,7 @@ class HuggingFaceParser():
             self._logger.info(f"Repo: {item.id}")
         return True
     
-    def change_try_again_cache(self):
+    def __change_try_again_cache__(self):
         for parser in self._rdf_parsers:
             options = parser.get_cache_options()
             if "load-model" not in options:
@@ -1029,8 +1062,8 @@ class HuggingFaceParser():
             
             self._n_right = 0
             
-            self.store_original_handlers(signals_to_catch)
-            self.set_multiple_singal(signals_to_catch,self.__signal_handler__)
+            self.__store_original_handlers__(signals_to_catch)
+            self.__set_multiple_singal__(signals_to_catch,self.__signal_handler__)
             
             self.__load_progress__(os.path.join(self._work_folder,self._cache_file_name))
             self.__load_metrics_file__()
@@ -1047,9 +1080,9 @@ class HuggingFaceParser():
                 self._pbar = tq.tqdm(total=self._n_repos, desc="Nº Completed Repos")
             
             if try_again or try_error:
-                self.change_try_again_cache()
+                self.__change_try_again_cache__()
             self.__check_is_stoped__()
-            self.__paralalise_executions_(try_again=try_again)
+            self.__paralalise_executions__(try_again=try_again)
             self._running=False
         except (BaseException):
             if self._hard_stop!=True:
@@ -1078,17 +1111,17 @@ class HuggingFaceParser():
                             self._threads_stopped_bar = tq.tqdm(total=len(self._threads), desc="Stopping Threads")
                         self._threads_stopped_bar.update(len(stopped_threads)) 
                     
-                    self.set_multiple_singal(signals_to_catch,self.__signal_handler_raise__)
+                    self.__set_multiple_singal__(signals_to_catch,self.__signal_handler_raise__)
                     try:
                         for thread in self._threads:
                             thread.join()
                     except Exception:
                         self._logger.error("Stopping Threads Forcefully. Errors might occur")
-                    self.set_multiple_singal(signals_to_catch,self.__signal_handler__)
+                    self.__set_multiple_singal__(signals_to_catch,self.__signal_handler__)
                     self._logger.error("All Threads properly stopped")
                     self._repo_lists
                     
-            self.restore_multiple_singal(signals_to_catch)        
+            self.__restore_multiple_singal__(signals_to_catch)        
                     
             if hasattr(self,"_repo_lists") and hasattr(self,"_repo_data_queue"):
                 self.__fill_stopped_list__()
@@ -1196,7 +1229,7 @@ class HuggingFaceParser():
         
     
     
-    def __fill_csv_report_(self,repo_data:ModelInfo,report_repo,date):
+    def __fill_csv_report__(self,repo_data:ModelInfo,report_repo,date,try_again=False):
         with self._lock:
             df = self._metrics_data
             self._dirty=True
@@ -1207,12 +1240,22 @@ class HuggingFaceParser():
                     "date":date}
 
             
-
-            HuggingFaceParser.__add_time_report__(new_row,report_repo,"download_time","downloading_time")
-            HuggingFaceParser.__add_time_report__(new_row,report_repo,"metadata_time","metadata_time")
-
+            if not try_again:
+                HuggingFaceParser.__add_time_report__(new_row,report_repo,"download_time","downloading_time")
+                HuggingFaceParser.__add_time_report__(new_row,report_repo,"metadata_time","metadata_time")
+                HuggingFaceParser.__add_time_report__(new_row,report_repo,"load_elapsed_time","load_elapsed_time")
+            else:
+                rows = df[df['repo_id'] == repo_data.id]
+                if len(rows)>0:
+                    row= rows.iloc[0]
+                    new_row["downloading_time"] = row["downloading_time"].item()
+                    new_row["metadata_time"] = row["downloading_time"].item()
+                    new_row["load_elapsed_time"] = row["downloading_time"].item()
+                else:
+                    new_row["downloading_time"] = 0
+                    new_row["metadata_time"] = 0
+                    HuggingFaceParser.__add_time_report__(new_row,report_repo,"load_elapsed_time","load_elapsed_time")
             
-            HuggingFaceParser.__add_time_report__(new_row,report_repo,"load_elapsed_time","load_elapsed_time")
             HuggingFaceParser.__add_time_report__(new_row,report_repo,"preprocess_elapsed_time","preprocess_elapsed_time")
             HuggingFaceParser.__add_time_report__(new_row,report_repo,"yarrr2rml_elapsed_time","yarrr2rml_elapsed_time")
             HuggingFaceParser.__add_time_report__(new_row,report_repo,"rml_parsing_elapsed_time","rml_parsing_elapsed_time")
@@ -1253,7 +1296,7 @@ class HuggingFaceParser():
         return report
     
     @staticmethod
-    def build_model_name(repo_id):
+    def __build_model_name__(repo_id):
         return f"huggingface-{repo_id}"
     
     
@@ -1292,7 +1335,7 @@ class HuggingFaceParser():
             
             
             
-            model_path = os.path.join(self._work_folder,self.models_folder,repo_id)
+            model_path = os.path.join(self._work_folder,self._models_folder,repo_id)
             if not os.path.exists(model_path):
                 os.makedirs(model_path)
             paths = self.__get_onnx_paths__(repo_id,logger=logger)
@@ -1370,7 +1413,9 @@ class HuggingFaceParser():
             self.__check_is_stoped__()
             self._logger.info(f"Starting ONNX2RDF Parser for repo ({repo_id})")
             parser :ONNX2RDFParser = self._rdf_parsers[id_process]
-            result = parser.parse_file(model_path,model_name=self.build_model_name(repo_id),id_process=id_process,base_resource_url=self._resource_url)
+            uri_name = self.__build_model_name__(repo_id)
+            args = {"model_path":model_path,"model_name":uri_name,"id_process":id_process,"base_resource_url":self._resource_url}
+            result = self.__delegate_to_process__(func=parser.parse_file,kwargs=args)
             
             
             self.__check_is_stoped__()
@@ -1405,7 +1450,7 @@ class HuggingFaceParser():
         start_metadata = time.time()
         try:
             metadata_folder,metadata_mapping_path = self.__build_tmp_metadata__(repo_data,id_process,result["model_uris"])
-            rdf_path = os.path.join(parser.work_folder,parser.get_target_path(),self.build_model_name(repo_id))
+            rdf_path = os.path.join(parser.work_folder,parser.get_target_path(),self.__build_model_name__(repo_id))
             if metadata_folder and metadata_mapping_path:
                 result_path = parser.yarrml2_rdf_pipeline(metadata_mapping_path,file_name="metadata",output_folder=rdf_path)
                 self.__fix_incorrect_separator__(result_path)
@@ -1438,13 +1483,13 @@ class HuggingFaceParser():
         
         
     def __remove_files__(self,repo_id):
-        model_folder = os.path.join(self._work_folder, self.models_folder, repo_id)
+        _model_folder = os.path.join(self._work_folder, self._models_folder, repo_id)
 
         # Delete the folder and all its contents if it exists
-        if os.path.isdir(model_folder):
-            shutil.rmtree(model_folder)
+        if os.path.isdir(_model_folder):
+            shutil.rmtree(_model_folder)
         
-        base_folder = os.path.join(self._work_folder, self.models_folder)
+        base_folder = os.path.join(self._work_folder, self._models_folder)
         parts = repo_id.split("/")
 
         for i in reversed(range(1, len(parts))):  # Skip index 0 to preserve models_folder

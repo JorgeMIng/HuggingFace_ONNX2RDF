@@ -13,6 +13,7 @@ authors = [
     {name = "Jorge M", email = "jorge.martin.izquierdo@upm.es"},
 ]
 dependencies = [
+    "onnx-2-rdf",
     "onnx==1.18.0",
     "onnxruntime==1.22.0",
     "ruamel.yaml==0.18.10",
