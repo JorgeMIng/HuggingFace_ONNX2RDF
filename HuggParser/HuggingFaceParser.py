@@ -1242,20 +1242,20 @@ class HuggingFaceParser():
             
             if not try_again:
                 HuggingFaceParser.__add_time_report__(new_row,report_repo,"download_time","downloading_time")
-                HuggingFaceParser.__add_time_report__(new_row,report_repo,"metadata_time","metadata_time")
+                
                 HuggingFaceParser.__add_time_report__(new_row,report_repo,"load_elapsed_time","load_elapsed_time")
             else:
                 rows = df[df['repo_id'] == repo_data.id]
                 if len(rows)>0:
                     row= rows.iloc[0]
                     new_row["downloading_time"] = row["downloading_time"].item()
-                    new_row["metadata_time"] = row["metadata_time"].item()
                     new_row["load_elapsed_time"] = row["load_elapsed_time"].item()
                 else:
                     new_row["downloading_time"] = 0
-                    new_row["metadata_time"] = 0
+                    # it would not be a realistic time
                     HuggingFaceParser.__add_time_report__(new_row,report_repo,"load_elapsed_time","load_elapsed_time")
-            
+                    
+            HuggingFaceParser.__add_time_report__(new_row,report_repo,"metadata_time","metadata_time")
             HuggingFaceParser.__add_time_report__(new_row,report_repo,"preprocess_elapsed_time","preprocess_elapsed_time")
             HuggingFaceParser.__add_time_report__(new_row,report_repo,"yarrr2rml_elapsed_time","yarrr2rml_elapsed_time")
             HuggingFaceParser.__add_time_report__(new_row,report_repo,"rml_parsing_elapsed_time","rml_parsing_elapsed_time")
