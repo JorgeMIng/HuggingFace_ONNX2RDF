@@ -1249,8 +1249,8 @@ class HuggingFaceParser():
                 if len(rows)>0:
                     row= rows.iloc[0]
                     new_row["downloading_time"] = row["downloading_time"].item()
-                    new_row["metadata_time"] = row["downloading_time"].item()
-                    new_row["load_elapsed_time"] = row["downloading_time"].item()
+                    new_row["metadata_time"] = row["metadata_time"].item()
+                    new_row["load_elapsed_time"] = row["load_elapsed_time"].item()
                 else:
                     new_row["downloading_time"] = 0
                     new_row["metadata_time"] = 0
