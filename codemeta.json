@@ -16,7 +16,7 @@
     ],
     "codeRepository": "https://github.com/JorgeMIng/HuggingFace_ONNX2RDF",
     "dateCreated": "2025-07-05",
-    "dateModified": "2025-07-05",
+    "dateModified": "2025-07-08",
     "datePublished": "2025-07-05",
     "identifier": "https://doi.org/10.5281/zenodo.15814658",
     "description": "The parser automatically collects onnx files and using ONNX2RDF creates RDF files for each repository of HuggingFace",
@@ -44,7 +44,7 @@
         "https://github.com/RMLio/yarrrml-parser",
         "https://github.com/JorgeMIng/ONNX2RDF"
     ],
-    "version": "0.1.1",
+    "version": "0.1.2",
     "developmentStatus": "active",
     "issueTracker": "https://github.com/JorgeMIng/ONNX2RDF/issues"
 }

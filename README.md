@@ -246,7 +246,7 @@ If you use this software, please cite as:
 @software{martin_izquierdo_2025_onnx2rdf,
   author       = {Jorge Martín Izquierdo},
   title        = {HuggingFace2RDF},
-  version      = {0.1.1},
+  version      = {0.1.2},
   date         = {2025-07-05},
   url          = {https://github.com/JorgeMIng/HuggingFace_ONNX2RDF},
   doi          = {10.5281/zenodo.15814658},
