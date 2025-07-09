@@ -12,6 +12,7 @@ license = {text = "Apache-2.0"}
 authors = [
     {name = "Jorge M", email = "jorge.martin.izquierdo@upm.es"},
 ]
+
 dependencies = [
     "onnx-2-rdf",
     "onnx==1.18.0",
@@ -30,6 +31,31 @@ dependencies = [
     "ipython==9.0.2"
 
 ]
+classifiers = [
+    "Development Status :: 4 - Beta",
+
+    # Audience and usage
+    "Intended Audience :: Developers",
+    "Intended Audience :: Science/Research",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Topic :: Scientific/Engineering :: Information Analysis",
+    "Topic :: Software Development :: Build Tools",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+
+    # License
+    "License :: OSI Approved :: Apache Software License",
+
+    # Supported Python versions
+
+    "Programming Language :: Python :: 3.13",
+
+    # Natural language
+    "Natural Language :: English",
+
+    # Operating systems
+    "Operating System :: Microsoft :: Windows",
+    "Operating System :: POSIX :: Linux",
+]
 
 [project.urls]
 # Uncomment and update with your actual URL
@@ -47,3 +73,4 @@ HuggParser = [
 
 [project.scripts]
 hugg-parser = "HuggParser.HuggingFaceParser:__call_main_with_args__"
+
