@@ -776,8 +776,8 @@ class HuggingFaceParser():
             else:
                 default_files = folder_to_default.get(folder, [])
                 if default_files:
-                    selected = default_files
-                    info = f"[{folder}] Found .onnx file: {default_files}"
+                    selected = self.__filter_unwanted_onnx_files__(default_files)
+                    info = f"[{folder}] Found .onnx files: {default_files}"
                     if logger!=None:
                         logger.info(info)
                 else:
@@ -787,8 +787,45 @@ class HuggingFaceParser():
                     selected = []
 
             selected_files.extend(selected)
+            
 
         return selected_files
+    
+    def __filter_unwanted_onnx_files__(self,files):
+        
+        problematic_key_words=["_bnb4","_fp16","_int8","_q4","_q4f16","_quantized","_uint8","_uint8f16","_q8f16","_fp32"]
+        problematic_words=["3DBall","PushBlocks","SmallWallJump","BigWallJump","Crawler","Soccer","Walker","Pyramids",
+                   "Worm","Huggy","Hallway","Striker","Goalie","SoccerTwos","GridFoodCollector","Bouncer"]
+        problematic_keys=problematic_key_words.copy()
+        problematic_keys.extend(problematic_words)
+
+        default_files=[]
+        default_names=[]
+        problematic_files={key: [] for key in problematic_keys}
+        filter_files=[]
+        for file in files:
+            name:str = os.path.basename(file).split(".onnx")[0]
+            matched=False
+            for key in problematic_key_words:
+                if name.endswith(key):
+                    matched=True
+                    problematic_files[key].append({"file":file,"name":name.split(key)[0]})
+            for key in problematic_words:
+                pattern = re.compile(rf"^{re.escape(key)}-\w+$")
+                if pattern.match(name):
+                    matched=True
+                    problematic_files[key].append({"file":file,"name":key})
+            if not matched:
+                default_files.append(file)
+                default_names.append(name)
+                
+        for key in problematic_keys:
+            for file in problematic_files[key]:
+                if file["name"] not in default_names:
+                    filter_files.append(file["file"])
+        filter_files.extend(default_files)
+        return filter_files
+        
     
     @staticmethod
     def __exists_cache__(file_path,repo_id,work_folder):
@@ -862,7 +899,7 @@ class HuggingFaceParser():
                 #fix annoying issue with max path
                 args = {"repo_id":repo_id, "filename":file,"local_dir":local_dir,"cache_dir":local_dir,"force_download":True,"resume_download":True,"etag_timeout":130}
                 
-                self.__delegate_to_process__(hf_hub_download,kwargs=args)
+                downloaded_path = self.__delegate_to_process__(hf_hub_download,kwargs=args)
 
                 outer_progress.update(1)
                 if logger:    
@@ -1239,27 +1276,23 @@ class HuggingFaceParser():
                     "rdf_repo_size":report_repo["after_size"],
                     "date":date}
 
-            
-            if not try_again:
-                HuggingFaceParser.__add_time_report__(new_row,report_repo,"download_time","downloading_time")
-                
-                HuggingFaceParser.__add_time_report__(new_row,report_repo,"load_elapsed_time","load_elapsed_time")
-            else:
+            HuggingFaceParser.__add_time_report__(new_row,report_repo,"global_elapsed_time","global_elapsed_time")
+            HuggingFaceParser.__add_time_report__(new_row,report_repo,"load_elapsed_time","load_elapsed_time")
+            HuggingFaceParser.__add_time_report__(new_row,report_repo,"download_time","downloading_time")
+            if try_again:
                 rows = df[df['repo_id'] == repo_data.id]
                 if len(rows)>0:
                     row= rows.iloc[0]
                     new_row["downloading_time"] = row["downloading_time"].item()
+                    new_row["global_elapsed_time"] = new_row["global_elapsed_time"]-new_row["load_elapsed_time"]+row["load_elapsed_time"].item()
                     new_row["load_elapsed_time"] = row["load_elapsed_time"].item()
-                else:
-                    new_row["downloading_time"] = 0
-                    # it would not be a realistic time
-                    HuggingFaceParser.__add_time_report__(new_row,report_repo,"load_elapsed_time","load_elapsed_time")
                     
+                     
             HuggingFaceParser.__add_time_report__(new_row,report_repo,"metadata_time","metadata_time")
             HuggingFaceParser.__add_time_report__(new_row,report_repo,"preprocess_elapsed_time","preprocess_elapsed_time")
             HuggingFaceParser.__add_time_report__(new_row,report_repo,"yarrr2rml_elapsed_time","yarrr2rml_elapsed_time")
             HuggingFaceParser.__add_time_report__(new_row,report_repo,"rml_parsing_elapsed_time","rml_parsing_elapsed_time")
-            HuggingFaceParser.__add_time_report__(new_row,report_repo,"global_elapsed_time","global_elapsed_time")
+            
             
             try:
                 new_row["global_elapsed_time"] = new_row["global_elapsed_time"] + new_row["downloading_time"] + new_row["metadata_time"]
